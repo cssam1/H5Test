@@ -19,27 +19,31 @@
   </head>
 
   <body style="margin-top: 20px;">
-    <audio></audio>
-    <button class="recorderControl">录制</button>
+    <button onclick="record()">开始录音</button>
+    <script>
+      function record() {
+        window.navigator.mediaDevices
+          .getUserMedia({
+            audio: true
+          })
+          .then(mediaStream => {
+            console.log(mediaStream);
+            beginRecord(mediaStream);
+          })
+          .catch(err => {
+            // 如果用户电脑没有麦克风设备或者用户拒绝了，或者连接出问题了等
+            // 这里都会抛异常，并且通过err.name可以知道是哪种类型的错误
+            console.error(err);
+          });
+      }
 
+      function beginRecord(mediaStream) {
+        let audioContext = new (window.AudioContext ||
+          window.webkitAudioContext)();
+        let mediaNode = audioContext.createMediaStreamSource(mediaStream);
+        // 这里connect之后就会自动播放了
+        mediaNode.connect(audioContext.destination);
+      }
+    </script>
   </body>
-  <script>
-    var promise=navigator.mediaDevices.getUserMedia({audio:true});
-    promise.then(function(stream){
-    var audio=document.querySelector("audio")
-    audio.src=URL.createObjectURL(stream);
-    var recorder=new MediaRecorder(stream);
-
-    var recorderControl=document.querySelector(".recorderControl");
-    recorderControl.οnclick=function(){
-      this.textContent==="录制"?audio.play():audio.pause();
-      this.textContent==="录制"?recorder.start():recorder.stop();
-      this.textContent=this.textContent==="录制"?"停止":"录制";
-    }
-    recorder.ondataavailable=function(){
-      //收集媒体设备 获得到的 可以使用的 媒体流数据
-      console.log(event.data)
-    }
-    });
-  </script>
 </html>
