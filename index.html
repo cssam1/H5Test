@@ -19,94 +19,27 @@
   </head>
 
   <body style="margin-top: 20px;">
-    <button id="start">Start</button> <button id="stop">Stop</button>
-    <div>
-      <p>live. <span class="timer"></span></p>
-      <video
-        width="600"
-        id="live"
-        style="box-sizing: border-box; border: 4px solid #f48"
-      ></video>
-    </div>
-    <script>
-      let l = console.log;
-      let n = 0;
+    <audio></audio>
+    <button class="recorderControl">录制</button>
 
-      let mediaRecorder;
-      let timer;
-      const stopButton = document.getElementById("stop");
-      const startButton = document.getElementById("start");
-
-      navigator.mediaDevices
-        .getUserMedia({
-          audio: true,
-          video: false,
-        })
-        .then(stream => {
-          let liveVideo = document.getElementById("live");
-          // liveVideo.src = URL.createObjectURL(stream); // 你会看到一些警告
-          liveVideo.srcObject = stream;
-          liveVideo.play();
-
-          stopButton.addEventListener("click", stopLive);
-          startButton.addEventListener("click", e => {
-            startLive(stream);
-          });
-        });
-
-      // 显示录制的秒数
-      function logger() {
-        const timerEl = document.querySelector(".timer");
-        timer = setInterval(() => {
-          n += 1;
-          timerEl.textContent = `${n}s`;
-        }, 1000);
-      }
-
-      // 暂停后下载视频
-      function downLoadVideo(chunks) {
-        let downloadLink = document.createElement("a");
-        downloadLink.href = URL.createObjectURL(
-          new Blob(chunks, {
-            type: "application/video",
-          })
-        );
-        // downloadLink.download = 'live.webm';
-        downloadLink.download = "live.ogg";
-        // downloadLink.download = 'live.mp4';
-        downloadLink.click();
-      }
-
-      // 结束录制
-      function stopLive() {
-        clearInterval(timer);
-        n = 0;
-        if (mediaRecorder) {
-          mediaRecorder.stop();
-        } else {
-          alert("还没有开始。");
-        }
-      }
-
-      function startLive(stream) {
-        logger();
-        let recordedChunks = [];
-        mediaRecorder = new MediaRecorder(stream);
-        mediaRecorder.start();
-
-        mediaRecorder.addEventListener("dataavailable", function(e) {
-          if (e.data.size > 0) recordedChunks.push(e.data);
-        });
-
-        mediaRecorder.addEventListener("stop", function() {
-          l("暂停 自动下载");
-          downLoadVideo(recordedChunks);
-        });
-
-        mediaRecorder.addEventListener("start", e => {
-          l("开始 录制");
-        });
-      }
-    </script>
   </body>
+  <script>
+    var promise=navigator.mediaDevices.getUserMedia({audio:true});
+    promise.then(function(stream){
+    var audio=document.querySelector("audio")
+    audio.src=URL.createObjectURL(stream);
+    var recorder=new MediaRecorder(stream);
+
+    var recorderControl=document.querySelector(".recorderControl");
+    recorderControl.οnclick=function(){
+      this.textContent==="录制"?audio.play():audio.pause();
+      this.textContent==="录制"?recorder.start():recorder.stop();
+      this.textContent=this.textContent==="录制"?"停止":"录制";
+    }
+    recorder.ondataavailable=function(){
+      //收集媒体设备 获得到的 可以使用的 媒体流数据
+      console.log(event.data)
+    }
+    });
+  </script>
 </html>
